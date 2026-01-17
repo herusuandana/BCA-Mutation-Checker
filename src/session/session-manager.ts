@@ -111,22 +111,27 @@ export class SessionManager implements ISessionManager {
     try {
       // Navigate to login page
       await session.page.goto(BCA_LOGIN_URL, {
-        waitUntil: "networkidle",
+        waitUntil: "domcontentloaded",
         timeout: 30000,
       });
 
-      // Fill credentials
+      // Wait for login form to be ready
+      await session.page.waitForSelector('input[name="txt_user_id"]', {
+        timeout: 10000,
+        state: "visible",
+      });
+
+      // Fill username using specific name selector
       await session.page.fill(
-        'input[name="value(user_id)"]',
+        'input[name="txt_user_id"]',
         credentials.username,
       );
-      await session.page.fill(
-        'input[name="value(pswd)"]',
-        credentials.password,
-      );
 
-      // Submit form
-      await session.page.click('input[type="submit"][value="LOGIN"]');
+      // Fill password using specific name selector
+      await session.page.fill('input[name="txt_pswd"]', credentials.password);
+
+      // Click login button
+      await session.page.click('input[type="Submit"][value="LOGIN"]');
 
       // Wait for navigation after login
       await session.page.waitForLoadState("networkidle", { timeout: 30000 });
